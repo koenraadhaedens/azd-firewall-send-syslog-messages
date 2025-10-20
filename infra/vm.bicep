@@ -44,6 +44,34 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
           direction: 'Inbound'
         }
       }
+      {
+        name: 'Syslog-UDP'
+        properties: {
+          description: 'Allow Syslog UDP'
+          protocol: 'Udp'
+          sourcePortRange: '*'
+          destinationPortRange: '514'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1002
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'Syslog-TCP'
+        properties: {
+          description: 'Allow Syslog TCP'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '514'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 1003
+          direction: 'Inbound'
+        }
+      }
     ]
   }
 }
@@ -134,6 +162,23 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-09-01' = {
           id: nic.id
         }
       ]
+    }
+  }
+}
+
+// Custom Script Extension to run enable-syslog.sh
+resource vmExtension 'Microsoft.Compute/virtualMachines/extensions@2023-09-01' = {
+  parent: vm
+  name: 'enableSyslogScript'
+  location: location
+  tags: tags
+  properties: {
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.1'
+    autoUpgradeMinorVersion: true
+    protectedSettings: {
+      script: base64(loadTextContent('enable-syslog.sh'))
     }
   }
 }
