@@ -18,7 +18,7 @@ param adminUsername string = 'linadmin'
 param adminPassword string
 
 @description('Size of the virtual machine')
-param vmSize string = 'Standard_B1s'
+param vmSize string = 'Standard_B2s'
 
 @description('Ubuntu OS version')
 param ubuntuOSVersion string = '22_04-lts-gen2'
