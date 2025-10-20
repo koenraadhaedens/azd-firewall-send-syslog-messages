@@ -1,0 +1,1 @@
+# azd-firewall-send-syslog-messages
