@@ -39,7 +39,7 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
           destinationPortRange: '22'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          access: 'Allow'
+          access: 'deny'
           priority: 1001
           direction: 'Inbound'
         }
