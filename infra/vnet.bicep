@@ -37,6 +37,14 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
         name: fwSubnet.name
         properties: {
           addressPrefix: fwSubnet.addressPrefix
+          delegations: [
+            {
+              name: 'Microsoft.ContainerInstance.containerGroups'
+              properties: {
+                serviceName: 'Microsoft.ContainerInstance/containerGroups'
+              }
+            }
+          ]
         }
       }
       {
