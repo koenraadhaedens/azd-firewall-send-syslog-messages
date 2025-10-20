@@ -2,6 +2,8 @@
 
 This project provides a complete Azure infrastructure setup to simulate firewall syslog messages for Microsoft Sentinel training purposes. It consists of an emulated firewall (containerized application) that sends realistic firewall logs as syslog messages to a VM, which can then be ingested by Microsoft Sentinel for analysis and parser development. (the Data Collection Rule is not created, you should do this as a demo)
 
+If you need a Sentinel enviremont you can use MTTDeploy Sentinel demo,[https://microsoftlearning.github.io/trainer-demo-deploy/?name=senti]
+
 ## Architecture Overview
 
 The solution deploys the following Azure resources:
