@@ -66,15 +66,6 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2023-05-01'
     ]
     osType: 'Linux'
     restartPolicy: 'Always'
-    ipAddress: {
-      type: 'Private'
-      ports: [
-        {
-          port: 514
-          protocol: 'UDP'
-        }
-      ]
-    }
     subnetIds: [
       {
         id: subnetId
@@ -94,6 +85,5 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2023-05-01'
 output containerGroup object = {
   id: containerGroup.id
   name: containerGroup.name
-  ipAddress: containerGroup.properties.ipAddress
   provisioningState: containerGroup.properties.provisioningState
 }
