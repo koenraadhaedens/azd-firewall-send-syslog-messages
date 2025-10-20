@@ -51,7 +51,7 @@ The solution deploys the following Azure resources:
 - **OS**: Ubuntu 22.04 LTS
 - **Network**: Private IP in monitor subnet, public IP for SSH access
 - **Services**: 
-  - SSH (port 22)
+  - SSH (port 22) denied by default. If needed please just open for your client IP
   - Rsyslog server (port 514 UDP/TCP)
 - **Purpose**: Receives syslog messages from the firewall emulator
 
