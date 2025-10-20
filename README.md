@@ -1,6 +1,6 @@
 # Azure Firewall Syslog Emulator for Sentinel Training
 
-This project provides a complete Azure infrastructure setup to simulate firewall syslog messages for Microsoft Sentinel training purposes. It consists of an emulated firewall (containerized application) that sends realistic firewall logs as syslog messages to a VM, which can then be ingested by Microsoft Sentinel for analysis and parser development.
+This project provides a complete Azure infrastructure setup to simulate firewall syslog messages for Microsoft Sentinel training purposes. It consists of an emulated firewall (containerized application) that sends realistic firewall logs as syslog messages to a VM, which can then be ingested by Microsoft Sentinel for analysis and parser development. (the Data Collection Rule is not created, you should do this as a demo)
 
 ## Architecture Overview
 
@@ -84,7 +84,7 @@ The containerized application (`simulatesyslog.py`) generates realistic firewall
 
 1. **Clone and navigate to the project**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/koenraadhaedens/azd-firewall-send-syslog-messages
    cd azd-firewall-send-syslog-messages
    ```
 
@@ -124,7 +124,7 @@ The containerized application (`simulatesyslog.py`) generates realistic firewall
    - Name: `DCR-FirewallSyslog`
    - Select your resource group and region
    - Add the Ubuntu VM as a resource
-   - Configure syslog facilities (select relevant ones like `local0`, `daemon`, etc.)
+   - Configure syslog facilities (select relevant ones like `LOG_USER`, `info`)
 
 4. **Verify Data Flow**:
    - Wait 5-10 minutes for data to start flowing
