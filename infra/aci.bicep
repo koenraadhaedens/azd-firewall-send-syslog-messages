@@ -68,7 +68,12 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2023-05-01'
     restartPolicy: 'Always'
     ipAddress: {
       type: 'Private'
-      ports: []
+      ports: [
+        {
+          port: 514
+          protocol: 'UDP'
+        }
+      ]
     }
     subnetIds: [
       {
