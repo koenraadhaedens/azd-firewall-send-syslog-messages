@@ -1,0 +1,15 @@
+# Use official Python slim image
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy your Python script into the container
+COPY simulatesyslog.py .
+
+# If you have requirements.txt, uncomment these lines:
+# COPY requirements.txt .
+# RUN pip install -r requirements.txt
+
+# By default, run the script. You can override args at runtime.
+ENTRYPOINT ["python", "simulatesyslog.py"]
