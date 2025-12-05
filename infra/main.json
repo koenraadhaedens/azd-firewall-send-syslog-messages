@@ -1,0 +1,742 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "13598073284359761150"
+    }
+  },
+  "parameters": {
+    "environmentName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "metadata": {
+        "description": "Name of the environment that can be used as part of naming resource convention"
+      }
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Primary location for all resources"
+      }
+    },
+    "VMPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for VS Code login"
+      }
+    },
+    "registryServer": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Container registry server (optional - leave empty if image is public)"
+      }
+    },
+    "registryUsername": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Container registry username (optional)"
+      }
+    },
+    "registryPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Container registry password (optional)"
+      }
+    }
+  },
+  "variables": {
+    "tags": {
+      "azd-env-name": "[parameters('environmentName')]",
+      "SecurityControl": "Ignore",
+      "CostContol": "Ignore"
+    }
+  },
+  "resources": {
+    "rg": {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2022-09-01",
+      "name": "[format('rg-{0}', parameters('environmentName'))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]"
+    },
+    "vnetModule": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('vnetModule-{0}', uniqueString('vnetModule', deployment().name))]",
+      "resourceGroup": "[format('rg-{0}', parameters('environmentName'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vnetName": {
+            "value": "[format('vnet-{0}', parameters('environmentName'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "addressSpace": {
+            "value": "10.34.0.0/16"
+          },
+          "fwSubnet": {
+            "value": {
+              "name": "demofwSubnet",
+              "addressPrefix": "10.34.1.0/24"
+            }
+          },
+          "monSubnet": {
+            "value": {
+              "name": "monsubnet",
+              "addressPrefix": "10.34.2.0/24"
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.39.26.7824",
+              "templateHash": "15782455379465960307"
+            }
+          },
+          "parameters": {
+            "vnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the virtual network"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the virtual network"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags to apply to the virtual network"
+              }
+            },
+            "addressSpace": {
+              "type": "string",
+              "defaultValue": "10.34.0.0/16",
+              "metadata": {
+                "description": "Address space for the virtual network"
+              }
+            },
+            "fwSubnet": {
+              "type": "object",
+              "defaultValue": {
+                "name": "fwSubnet",
+                "addressPrefix": "10.34.1.0/24"
+              },
+              "metadata": {
+                "description": "Firewall subnet configuration"
+              }
+            },
+            "monSubnet": {
+              "type": "object",
+              "defaultValue": {
+                "name": "monsubnet",
+                "addressPrefix": "10.34.2.0/24"
+              },
+              "metadata": {
+                "description": "Monitoring subnet configuration"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2023-11-01",
+              "name": "[parameters('vnetName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('addressSpace')]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[parameters('fwSubnet').name]",
+                    "properties": {
+                      "addressPrefix": "[parameters('fwSubnet').addressPrefix]",
+                      "delegations": [
+                        {
+                          "name": "Microsoft.ContainerInstance.containerGroups",
+                          "properties": {
+                            "serviceName": "Microsoft.ContainerInstance/containerGroups"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "[parameters('monSubnet').name]",
+                    "properties": {
+                      "addressPrefix": "[parameters('monSubnet').addressPrefix]"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "outputs": {
+            "vnet": {
+              "type": "object",
+              "metadata": {
+                "description": "Virtual network resource"
+              },
+              "value": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+                "name": "[parameters('vnetName')]",
+                "addressSpace": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2023-11-01').addressSpace.addressPrefixes[0]]",
+                "subnets": {
+                  "fwSubnet": {
+                    "id": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2023-11-01').subnets[0].id]",
+                    "name": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2023-11-01').subnets[0].name]",
+                    "addressPrefix": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2023-11-01').subnets[0].properties.addressPrefix]"
+                  },
+                  "monSubnet": {
+                    "id": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2023-11-01').subnets[1].id]",
+                    "name": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2023-11-01').subnets[1].name]",
+                    "addressPrefix": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2023-11-01').subnets[1].properties.addressPrefix]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "rg"
+      ]
+    },
+    "vmModule": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('vmModule-{0}', uniqueString('vmModule', deployment().name))]",
+      "resourceGroup": "[format('rg-{0}', parameters('environmentName'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vmName": {
+            "value": "[format('vm-ubuntu-{0}', parameters('environmentName'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "subnetId": {
+            "value": "[reference('vnetModule').outputs.vnet.value.subnets.monSubnet.id]"
+          },
+          "adminUsername": {
+            "value": "linadmin"
+          },
+          "adminPassword": {
+            "value": "[parameters('VMPassword')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.39.26.7824",
+              "templateHash": "16292299166147716376"
+            }
+          },
+          "parameters": {
+            "vmName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the virtual machine"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the virtual machine"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags to apply to the virtual machine resources"
+              }
+            },
+            "subnetId": {
+              "type": "string",
+              "metadata": {
+                "description": "Subnet ID where the VM will be deployed"
+              }
+            },
+            "adminUsername": {
+              "type": "string",
+              "defaultValue": "linadmin",
+              "metadata": {
+                "description": "Admin username for the virtual machine"
+              }
+            },
+            "adminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Admin password for the virtual machine"
+              }
+            },
+            "vmSize": {
+              "type": "string",
+              "defaultValue": "Standard_B2s",
+              "metadata": {
+                "description": "Size of the virtual machine"
+              }
+            },
+            "ubuntuOSVersion": {
+              "type": "string",
+              "defaultValue": "22_04-lts-gen2",
+              "metadata": {
+                "description": "Ubuntu OS version"
+              }
+            }
+          },
+          "variables": {
+            "$fxv#0": "#!/bin/bash\nset -e\n\nRSYSLOG_CONF=\"/etc/rsyslog.conf\"\n\n# Maak een backup\ncp $RSYSLOG_CONF ${RSYSLOG_CONF}.bak\n\n# Verwijder de '#' voor de imudp en imtcp regels\nsed -i 's/^#module(load=\"imudp\")/module(load=\"imudp\")/' $RSYSLOG_CONF\nsed -i 's/^#input(type=\"imudp\" port=\"514\")/input(type=\"imudp\" port=\"514\")/' $RSYSLOG_CONF\nsed -i 's/^#module(load=\"imtcp\")/module(load=\"imtcp\")/' $RSYSLOG_CONF\nsed -i 's/^#input(type=\"imtcp\" port=\"514\")/input(type=\"imtcp\" port=\"514\")/' $RSYSLOG_CONF\n\n# rsyslog herstarten\nsystemctl restart rsyslog\n\necho \"rsyslog UDP/TCP listener enabled.\"\n"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2023-11-01",
+              "name": "[format('{0}-nsg', parameters('vmName'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "SSH",
+                    "properties": {
+                      "description": "Allow SSH",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "22",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "deny",
+                      "priority": 1001,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "Syslog-UDP",
+                    "properties": {
+                      "description": "Allow Syslog UDP",
+                      "protocol": "Udp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "514",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1002,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "Syslog-TCP",
+                    "properties": {
+                      "description": "Allow Syslog TCP",
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "514",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1003,
+                      "direction": "Inbound"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2023-11-01",
+              "name": "[format('{0}-pip', parameters('vmName'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "dnsSettings": {
+                  "domainNameLabel": "[toLower(format('{0}-{1}', parameters('vmName'), uniqueString(resourceGroup().id)))]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2023-11-01",
+              "name": "[format('{0}-nic', parameters('vmName'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[parameters('subnetId')]"
+                      },
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('vmName')))]"
+                      }
+                    }
+                  }
+                ],
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}-nsg', parameters('vmName')))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}-nsg', parameters('vmName')))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('vmName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2023-09-01",
+              "name": "[parameters('vmName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                  "computerName": "[parameters('vmName')]",
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "adminPassword": "[parameters('adminPassword')]",
+                  "linuxConfiguration": {
+                    "disablePasswordAuthentication": false,
+                    "provisionVMAgent": true,
+                    "patchSettings": {
+                      "patchMode": "ImageDefault",
+                      "assessmentMode": "ImageDefault"
+                    }
+                  }
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "Canonical",
+                    "offer": "0001-com-ubuntu-server-jammy",
+                    "sku": "[parameters('ubuntuOSVersion')]",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "name": "[format('{0}-osdisk', parameters('vmName'))]",
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage",
+                    "managedDisk": {
+                      "storageAccountType": "Premium_LRS"
+                    }
+                  }
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName')))]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}/{1}', parameters('vmName'), 'enableSyslogScript')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "protectedSettings": {
+                  "script": "[base64(variables('$fxv#0'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "vm": {
+              "type": "object",
+              "metadata": {
+                "description": "Virtual machine information"
+              },
+              "value": {
+                "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]",
+                "name": "[parameters('vmName')]",
+                "adminUsername": "[parameters('adminUsername')]",
+                "publicIP": "[reference(resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('vmName'))), '2023-11-01').ipAddress]",
+                "fqdn": "[reference(resourceId('Microsoft.Network/publicIPAddresses', format('{0}-pip', parameters('vmName'))), '2023-11-01').dnsSettings.fqdn]",
+                "privateIP": "[reference(resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', parameters('vmName'))), '2023-11-01').ipConfigurations[0].properties.privateIPAddress]"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "rg",
+        "vnetModule"
+      ]
+    },
+    "aciModule": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('aciModule-{0}', uniqueString('aciModule', deployment().name))]",
+      "resourceGroup": "[format('rg-{0}', parameters('environmentName'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "containerGroupName": {
+            "value": "[format('aci-fwsyslog-{0}', parameters('environmentName'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[variables('tags')]"
+          },
+          "subnetId": {
+            "value": "[reference('vnetModule').outputs.vnet.value.subnets.fwSubnet.id]"
+          },
+          "serverPrivateIP": {
+            "value": "[reference('vmModule').outputs.vm.value.privateIP]"
+          },
+          "containerImage": {
+            "value": "acrdefcontainer.azurecr.io/fwsyslogemulator:latest"
+          },
+          "registryServer": {
+            "value": "[parameters('registryServer')]"
+          },
+          "registryUsername": {
+            "value": "[parameters('registryUsername')]"
+          },
+          "registryPassword": {
+            "value": "[parameters('registryPassword')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.39.26.7824",
+              "templateHash": "16923106250397447425"
+            }
+          },
+          "parameters": {
+            "containerGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the container group"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the container group"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Tags to apply to the container group"
+              }
+            },
+            "subnetId": {
+              "type": "string",
+              "metadata": {
+                "description": "Subnet ID where the container will be deployed"
+              }
+            },
+            "serverPrivateIP": {
+              "type": "string",
+              "metadata": {
+                "description": "Private IP address of the server (VM)"
+              }
+            },
+            "containerImage": {
+              "type": "string",
+              "defaultValue": "acrdefcontainer.azurecr.io/fwsyslogemulator:latest",
+              "metadata": {
+                "description": "Container image to deploy"
+              }
+            },
+            "cpuCores": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "CPU cores for the container"
+              }
+            },
+            "memoryInGB": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "Memory in GB for the container"
+              }
+            },
+            "registryServer": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container registry server (optional)"
+              }
+            },
+            "registryUsername": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container registry username (optional)"
+              }
+            },
+            "registryPassword": {
+              "type": "securestring",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Container registry password (optional)"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ContainerInstance/containerGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('containerGroupName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "containers": [
+                  {
+                    "name": "fwsyslogemulator",
+                    "properties": {
+                      "image": "[parameters('containerImage')]",
+                      "command": [
+                        "python",
+                        "/app/simulatesyslog.py",
+                        "--server",
+                        "[parameters('serverPrivateIP')]"
+                      ],
+                      "resources": {
+                        "requests": {
+                          "cpu": "[parameters('cpuCores')]",
+                          "memoryInGB": "[parameters('memoryInGB')]"
+                        }
+                      },
+                      "environmentVariables": [
+                        {
+                          "name": "SERVER_IP",
+                          "value": "[parameters('serverPrivateIP')]"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "osType": "Linux",
+                "restartPolicy": "Always",
+                "subnetIds": [
+                  {
+                    "id": "[parameters('subnetId')]"
+                  }
+                ],
+                "imageRegistryCredentials": "[if(not(empty(parameters('registryServer'))), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'password', parameters('registryPassword'))), createArray())]"
+              }
+            }
+          ],
+          "outputs": {
+            "containerGroup": {
+              "type": "object",
+              "metadata": {
+                "description": "Container group information"
+              },
+              "value": {
+                "id": "[resourceId('Microsoft.ContainerInstance/containerGroups', parameters('containerGroupName'))]",
+                "name": "[parameters('containerGroupName')]",
+                "provisioningState": "[reference(resourceId('Microsoft.ContainerInstance/containerGroups', parameters('containerGroupName')), '2023-05-01').provisioningState]"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "rg",
+        "vmModule",
+        "vnetModule"
+      ]
+    }
+  },
+  "outputs": {
+    "vnet": {
+      "type": "object",
+      "metadata": {
+        "description": "Virtual network information"
+      },
+      "value": "[reference('vnetModule').outputs.vnet.value]"
+    },
+    "vm": {
+      "type": "object",
+      "metadata": {
+        "description": "Virtual machine information"
+      },
+      "value": "[reference('vmModule').outputs.vm.value]"
+    },
+    "containerGroup": {
+      "type": "object",
+      "metadata": {
+        "description": "Container group information"
+      },
+      "value": "[reference('aciModule').outputs.containerGroup.value]"
+    }
+  }
+}
