@@ -23,6 +23,15 @@ param registryUsername string = ''
 @description('Container registry password (optional)')
 param registryPassword string = ''
 
+@description('Address space for the virtual network')
+param addressSpace string = '10.34.0.0/16'
+
+@description('Firewall subnet address prefix')
+param fwSubnetPrefix string = '10.34.1.0/24'
+
+@description('Monitoring subnet address prefix')
+param monSubnetPrefix string = '10.34.2.0/24'
+
 // Tags that should be applied to all resources.
 // 
 // Note that 'azd-service-name' tags should be applied separately to service host resources.
@@ -46,14 +55,14 @@ module vnetModule 'vnet.bicep' = {
     vnetName: 'vnet-${environmentName}'
     location: location
     tags: tags
-    addressSpace: '10.34.0.0/16'
+    addressSpace: addressSpace
     fwSubnet: {
       name: 'demofwSubnet'
-      addressPrefix: '10.34.1.0/24'
+      addressPrefix: fwSubnetPrefix
     }
     monSubnet: {
       name: 'monsubnet'
-      addressPrefix: '10.34.2.0/24'
+      addressPrefix: monSubnetPrefix
     }
   }
 }
