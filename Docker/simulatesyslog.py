@@ -4,14 +4,6 @@ send_firewall_syslog.py
 
 Simulate firewall logs and send them to a syslog server.
 
-Usage examples:
-  # send 100 messages to 10.0.0.5:514 over UDP at ~10 msgs/sec
-  python send_firewall_syslog.py --server 10.0.0.5 --port 514 --count 100 --rate 0.1
-
-  # send indefinitely to localhost syslog
-  python send_firewall_syslog.py --server 127.0.0.1 --port 514 --count 0
-
-Author: ChatGPT
 """
 import argparse
 import socket
