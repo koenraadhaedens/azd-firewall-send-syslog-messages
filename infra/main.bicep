@@ -10,8 +10,10 @@ param environmentName string
 param location string
 
 @secure()
-@description('Password for VS Code login')
-param VMPassword string //no value specified, so user will get prompted for it during deployment
+@minLength(8)
+@maxLength(123)
+@description('Password for VM admin user. Must be 8-123 characters with uppercase, lowercase, number, and special character.')
+param VMPassword string
 
 @description('Container registry server (optional - leave empty if image is public)')
 param registryServer string = ''

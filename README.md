@@ -96,20 +96,46 @@ The containerized application (`simulatesyslog.py`) generates realistic firewall
    ```
 
 3. **Deploy the infrastructure**:
+   
+   **Option 1 - Set VM password via environment variable (recommended)**:
    ```bash
+   # Set the VM password as an environment variable
+   $env:VM_PASSWORD = "YourSecurePassword123!"
    azd up
    ```
    
+   **Option 2 - Deploy with parameter file (will use default password)**:
+   ```bash
+   azd up
+   # Note: This uses the default password "ChangeMe123!" - change it immediately after deployment
+   ```
+   
+   **Option 3 - Deploy directly with Bicep (will prompt for password)**:
+   ```bash
+   # Deploy without parameter file to be prompted for password
+   az deployment sub create --template-file infra/main.bicep --location eastus
+   ```
+   
    You'll be prompted for:
-   - Environment name
-   - Azure location
-   - VM administrator password
+   - Environment name (if not set)
+   - Azure location (if not set)
+   - VM administrator password (if VM_PASSWORD environment variable is not set)
 
 4. **Access the VM** (optional for verification):
    ```bash
    ssh linadmin@<vm-public-ip>
    sudo tail -f /var/log/syslog
    ```
+
+### Security Notes
+
+- **Change default password**: If you used Option 2 above, immediately change the VM password after deployment:
+  ```bash
+  ssh linadmin@<vm-public-ip>
+  sudo passwd linadmin
+  ```
+- **VM Password Requirements**: Must be 8-123 characters with uppercase, lowercase, number, and special character
+- **SSH Access**: SSH is disabled by default in the NSG. Enable only for your specific IP if needed
 
 ## Microsoft Sentinel Integration
 
