@@ -2,9 +2,9 @@ using './main.bicep'
 
 param environmentName = readEnvironmentVariable('AZURE_ENV_NAME', 'dev')
 param location = readEnvironmentVariable('AZURE_LOCATION', 'eastus')
-// VM Password: Set VM_PASSWORD environment variable OR change this default value
-// Default password meets Azure requirements but should be changed after deployment
-param VMPassword = readEnvironmentVariable('VM_PASSWORD', 'ChangeMe123!')
+// Remove the line below to be prompted for VM password. 
+// When this parameter is removed, azd will prompt for VMPassword as it's marked @secure() in main.bicep
+param VMPassword = readEnvironmentVariable('VM_PASSWORD', 'REMOVE_THIS_LINE_TO_PROMPT_FOR_PASSWORD')
 param registryServer = readEnvironmentVariable('REGISTRY_SERVER', '')
 param registryUsername = readEnvironmentVariable('REGISTRY_USERNAME', '')
 param registryPassword = readEnvironmentVariable('REGISTRY_PASSWORD', '')

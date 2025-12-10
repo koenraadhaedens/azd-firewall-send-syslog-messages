@@ -97,23 +97,23 @@ The containerized application (`simulatesyslog.py`) generates realistic firewall
 
 3. **Deploy the infrastructure**:
    
-   **Option 1 - Set VM password via environment variable (recommended)**:
+   **To be prompted for VM password during `azd up`**:
+   1. Edit `infra/main.bicepparam` 
+   2. Comment out or delete the line: `param VMPassword = readEnvironmentVariable('VM_PASSWORD', 'REMOVE_THIS_LINE_TO_PROMPT_FOR_PASSWORD')`
+   3. Run `azd up` - you'll be prompted for the VM password
+   
+   **Alternative deployment options**:
+   
+   **Option A - Set environment variable**:
    ```bash
-   # Set the VM password as an environment variable
    $env:VM_PASSWORD = "YourSecurePassword123!"
    azd up
    ```
    
-   **Option 2 - Deploy with parameter file (will use default password)**:
+   **Option B - Deploy directly with Bicep**:
    ```bash
-   azd up
-   # Note: This uses the default password "ChangeMe123!" - change it immediately after deployment
-   ```
-   
-   **Option 3 - Deploy directly with Bicep (will prompt for password)**:
-   ```bash
-   # Deploy without parameter file to be prompted for password
-   az deployment sub create --template-file infra/main.bicep --location eastus
+   az deployment sub create --template-file infra/main.bicep --location eastus --parameters environmentName=myenv location=eastus
+   # You'll be prompted for VMPassword
    ```
    
    You'll be prompted for:

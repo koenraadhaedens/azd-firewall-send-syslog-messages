@@ -2,6 +2,8 @@
 name: tdd-infra-fw-syslog-emulator
 metadata:
   template: tdd-infra-fw-syslog-emulator@0.0.1-beta
+
 infra:
-   provider: "bicep"
+  provider: "bicep"
+  path: "infra"
 
