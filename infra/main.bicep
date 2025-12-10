@@ -12,7 +12,7 @@ param location string
 @secure()
 @minLength(8)
 @maxLength(123)
-@description('Password for VM admin user. Must be 8-123 characters with uppercase, lowercase, number, and special character.')
+@description('Password for the Windows VM')
 param VMPassword string
 
 @description('Container registry server (optional - leave empty if image is public)')

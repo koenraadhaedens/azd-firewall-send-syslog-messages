@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.39.26.7824",
-      "templateHash": "13598073284359761150"
+      "version": "0.38.33.27573",
+      "templateHash": "2893241556404837684"
     }
   },
   "parameters": {
@@ -27,8 +27,10 @@
     },
     "VMPassword": {
       "type": "securestring",
+      "minLength": 8,
+      "maxLength": 123,
       "metadata": {
-        "description": "Password for VS Code login"
+        "description": "Password for VM admin user. Must be 8-123 characters with uppercase, lowercase, number, and special character."
       }
     },
     "registryServer": {
@@ -50,6 +52,27 @@
       "defaultValue": "",
       "metadata": {
         "description": "Container registry password (optional)"
+      }
+    },
+    "addressSpace": {
+      "type": "string",
+      "defaultValue": "10.34.0.0/16",
+      "metadata": {
+        "description": "Address space for the virtual network"
+      }
+    },
+    "fwSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.34.1.0/24",
+      "metadata": {
+        "description": "Firewall subnet address prefix"
+      }
+    },
+    "monSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.34.2.0/24",
+      "metadata": {
+        "description": "Monitoring subnet address prefix"
       }
     }
   },
@@ -89,18 +112,18 @@
             "value": "[variables('tags')]"
           },
           "addressSpace": {
-            "value": "10.34.0.0/16"
+            "value": "[parameters('addressSpace')]"
           },
           "fwSubnet": {
             "value": {
               "name": "demofwSubnet",
-              "addressPrefix": "10.34.1.0/24"
+              "addressPrefix": "[parameters('fwSubnetPrefix')]"
             }
           },
           "monSubnet": {
             "value": {
               "name": "monsubnet",
-              "addressPrefix": "10.34.2.0/24"
+              "addressPrefix": "[parameters('monSubnetPrefix')]"
             }
           }
         },
@@ -110,8 +133,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "15782455379465960307"
+              "version": "0.38.33.27573",
+              "templateHash": "9453827420425022529"
             }
           },
           "parameters": {
@@ -268,8 +291,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "16292299166147716376"
+              "version": "0.38.33.27573",
+              "templateHash": "10639718503797501581"
             }
           },
           "parameters": {
@@ -328,7 +351,7 @@
             }
           },
           "variables": {
-            "$fxv#0": "#!/bin/bash\nset -e\n\nRSYSLOG_CONF=\"/etc/rsyslog.conf\"\n\n# Maak een backup\ncp $RSYSLOG_CONF ${RSYSLOG_CONF}.bak\n\n# Verwijder de '#' voor de imudp en imtcp regels\nsed -i 's/^#module(load=\"imudp\")/module(load=\"imudp\")/' $RSYSLOG_CONF\nsed -i 's/^#input(type=\"imudp\" port=\"514\")/input(type=\"imudp\" port=\"514\")/' $RSYSLOG_CONF\nsed -i 's/^#module(load=\"imtcp\")/module(load=\"imtcp\")/' $RSYSLOG_CONF\nsed -i 's/^#input(type=\"imtcp\" port=\"514\")/input(type=\"imtcp\" port=\"514\")/' $RSYSLOG_CONF\n\n# rsyslog herstarten\nsystemctl restart rsyslog\n\necho \"rsyslog UDP/TCP listener enabled.\"\n"
+            "$fxv#0": "#!/bin/bash\r\nset -e\r\n\r\nRSYSLOG_CONF=\"/etc/rsyslog.conf\"\r\n\r\n# Maak een backup\r\ncp $RSYSLOG_CONF ${RSYSLOG_CONF}.bak\r\n\r\n# Verwijder de '#' voor de imudp en imtcp regels\r\nsed -i 's/^#module(load=\"imudp\")/module(load=\"imudp\")/' $RSYSLOG_CONF\r\nsed -i 's/^#input(type=\"imudp\" port=\"514\")/input(type=\"imudp\" port=\"514\")/' $RSYSLOG_CONF\r\nsed -i 's/^#module(load=\"imtcp\")/module(load=\"imtcp\")/' $RSYSLOG_CONF\r\nsed -i 's/^#input(type=\"imtcp\" port=\"514\")/input(type=\"imtcp\" port=\"514\")/' $RSYSLOG_CONF\r\n\r\n# rsyslog herstarten\r\nsystemctl restart rsyslog\r\n\r\necho \"rsyslog UDP/TCP listener enabled.\"\r\n"
           },
           "resources": [
             {
@@ -569,8 +592,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "16923106250397447425"
+              "version": "0.38.33.27573",
+              "templateHash": "9041732090690302985"
             }
           },
           "parameters": {
