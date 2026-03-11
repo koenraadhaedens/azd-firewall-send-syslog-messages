@@ -205,6 +205,42 @@ Syslog
    ParseFirewallLogs
    | take 10
    ```
+4. **Create Analytic Rule**:
+
+```kusto
+let TI_IPs =
+    ThreatIntelIndicators
+    | where IsActive == true
+    | where ValidUntil > now()
+    | where isnotempty(ObservableValue)
+    | extend TI_IP = tolower(trim(@" """, tostring(ObservableValue)))
+    | summarize arg_max(TimeGenerated, *) by TI_IP;
+
+
+
+symfirewall
+| where isnotempty(dst)
+| extend DstIP = trim(@" '""", tostring(dst))
+| join kind=innerunique TI_IPs on $left.DstIP == $right.TI_IP
+| project
+    TimeGenerated,
+    action,
+    proto,
+    src,
+    spt,
+    dst = DstIP,
+    dpt,
+    rule,
+    bytes,
+    pkts,
+    TI_ObservableKey = ObservableKey,
+    TI_Confidence = Confidence,
+    TI_Tags = Tags,
+    TI_Pattern = Pattern,
+    TI_ValidUntil = ValidUntil,
+    TI_Source = SourceSystem
+```
+   
 
 ## Monitoring and Troubleshooting
 
