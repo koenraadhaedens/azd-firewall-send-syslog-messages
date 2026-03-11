@@ -215,10 +215,7 @@ let TI_IPs =
     | where isnotempty(ObservableValue)
     | extend TI_IP = tolower(trim(@" """, tostring(ObservableValue)))
     | summarize arg_max(TimeGenerated, *) by TI_IP;
-
-
-
-symfirewall
+ParseFirewallLogs
 | where isnotempty(dst)
 | extend DstIP = trim(@" '""", tostring(dst))
 | join kind=innerunique TI_IPs on $left.DstIP == $right.TI_IP
